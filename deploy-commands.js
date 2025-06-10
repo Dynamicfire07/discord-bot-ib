@@ -7,6 +7,10 @@ const commands = [
         name: 'test',
         description: 'Responds with "test complete".',
     },
+    {
+        name: 'profile',
+        description: 'Create or update your profile with subjects.',
+    },
 ];
 
 // Grab the Bot Token, Client ID, and Guild ID from the .env file
