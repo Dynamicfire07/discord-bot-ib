@@ -59,7 +59,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 .setPlaceholder('Select your subjects')
                 .setMinValues(1)
                 .setMaxValues(SUBJECTS.length)
-                .addOptions(SUBJECTS.map(s => ({ label: s, value: s })));
+                .addOptions(SUBJECTS.map(s => ({ label: s, value: s }))); 
 
             const row = new ActionRowBuilder().addComponents(menu);
 
@@ -68,6 +68,21 @@ client.on(Events.InteractionCreate, async interaction => {
                 components: [row],
                 ephemeral: true
             });
+        } else if (commandName === 'view-subjects') {
+            const target = interaction.options.getUser('user') || interaction.user;
+            const profiles = loadProfiles();
+            const subjects = profiles[target.id];
+            if (subjects && subjects.length > 0) {
+                await interaction.reply({
+                    content: `${target.username}'s subjects:\n- ${subjects.join('\n- ')}`,
+                    ephemeral: true
+                });
+            } else {
+                await interaction.reply({
+                    content: `No subjects found for ${target.username}.`,
+                    ephemeral: true
+                });
+            }
         }
     } else if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'subject-select') {

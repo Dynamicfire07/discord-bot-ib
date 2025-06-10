@@ -11,6 +11,18 @@ const commands = [
         name: 'profile',
         description: 'Create or update your profile with subjects.',
     },
+    {
+        name: 'view-subjects',
+        description: 'View the subjects selected by a user.',
+        options: [
+            {
+                name: 'user',
+                description: 'User to view subjects for',
+                type: 6, // USER type
+                required: false,
+            },
+        ],
+    },
 ];
 
 // Grab the Bot Token, Client ID, and Guild ID from the .env file
