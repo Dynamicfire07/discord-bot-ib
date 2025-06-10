@@ -1,6 +1,6 @@
 // my-discord-bot/index.js
 require('dotenv').config(); // Load environment variables from .env file
-const fs = require('fs');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const {
     Client,
@@ -23,19 +23,28 @@ const SUBJECTS = [
     'IB Chemistry'
 ];
 
-// Simple JSON based storage for user profiles
-const profilesPath = path.join(__dirname, 'data', 'profiles.json');
+// SQLite based storage for user profiles
+const dbPath = path.join(__dirname, 'data', 'profiles.db');
+const db = new sqlite3.Database(dbPath);
 
-function loadProfiles() {
-    try {
-        return JSON.parse(fs.readFileSync(profilesPath, 'utf8'));
-    } catch (err) {
-        return {};
-    }
-}
+db.serialize(() => {
+    db.run(
+        `CREATE TABLE IF NOT EXISTS profiles (
+            user_id TEXT PRIMARY KEY,
+            subjects TEXT
+        )`
+    );
+});
 
-function saveProfiles(profiles) {
-    fs.writeFileSync(profilesPath, JSON.stringify(profiles, null, 2));
+function saveProfile(userId, subjects) {
+    db.run(
+        `INSERT INTO profiles(user_id, subjects) VALUES (?, ?)
+         ON CONFLICT(user_id) DO UPDATE SET subjects=excluded.subjects`,
+        [userId, JSON.stringify(subjects)],
+        err => {
+            if (err) console.error('Failed to save profile', err);
+        }
+    );
 }
 
 // Create a new client instance
@@ -71,9 +80,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
     } else if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'subject-select') {
-            const profiles = loadProfiles();
-            profiles[interaction.user.id] = interaction.values;
-            saveProfiles(profiles);
+            saveProfile(interaction.user.id, interaction.values);
 
             await interaction.update({ content: 'Profile saved!', components: [] });
         }
